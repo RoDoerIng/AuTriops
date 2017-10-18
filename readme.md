@@ -23,6 +23,8 @@
             - [Temperatur](#temperatur)
             - [Füllstand](#füllstand)
             - [Beleuchtung](#beleuchtung)
+    - [Project Info](#project-info)
+        - [Definition of Done](#definition-of-done)
 
 <!-- /TOC -->
 
@@ -83,3 +85,13 @@
 #### Beleuchtung
 1. Manuell
 1. Steuerung
+
+
+## Project Info
+
+### Definition of Done
+
+- Schaltplan ist dokumentiert
+- User-Doku
+- Systemtest durchgeführt
+- _Safety Case_
