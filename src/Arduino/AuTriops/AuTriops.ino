@@ -3,15 +3,20 @@
 #define ONE_WIRE_BUS 6
 #define BUZZER 5
 #define QUIT_BUTTON 2
+#define HEATING 1
 #define HIGH_TEMP 27.0
 #define LOW_TEMP 20.0
+#define HEAT_LOW_TEMP 23
+#define HEAT_HIGH_TEMP 25
 #define DEBUG false
+#define INFO true
 
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature sensors(&oneWire);
 DeviceAddress tsaddress;
 
-float temp;
+float globalTemp;
+String globalTempString;
 bool globalQuit;
 
 
@@ -19,8 +24,9 @@ void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
   pinMode(BUZZER, OUTPUT);
   pinMode(QUIT_BUTTON, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(QUIT_BUTTON), setQuit, FALLING);
-  Serial.begin(115200);
+  pinMode(HEATING, OUTPUT);
+  attachInterrupt(digitalPinToInterrupt(QUIT_BUTTON), acknowledge, FALLING);
+  Serial.begin(9600);
   sensors.begin();
   debug("" + sensors.getDeviceCount());
   debugln(" Geraete am Bus.");
@@ -28,20 +34,57 @@ void setup() {
 }
 
 void loop() {
-  temp = getTemperature();
+  globalTemp = getTemperature();
+  globalTempString = floatToString(globalTemp);
   
-  Serial.println("act temp: "+floatToString(temp));
+  //Serial.println("act temp: " + globalTempString);//+floatToString(globalTemp));
   
   alarmController();
   
   ackMonitor();
 
-  //temperatureMonitor();
+  temperatureMonitor();
   //Serial.println("temp mon");
+
+  heatingController();
 
   delay(1000);
 }
 
+
+// Heating
+
+void heatingController(){
+  if (globalTemp > HEAT_HIGH_TEMP){
+    heatingOff();
+    infoln("heating off");
+  }
+  if (globalTemp < HEAT_LOW_TEMP){
+    heatingOn();
+    infoln("heating on");
+  }
+
+/*
+  if (isHeatingOn()){
+    infoln("heating on");
+  }
+  else{
+    infoln("heating off");
+  }
+  */
+}
+
+void heatingOn(){
+  digitalWrite(HEATING, true);
+}
+
+void heatingOff(){
+  digitalWrite(HEATING, false);
+}
+
+bool isHeatingOn(){
+  return digitalRead(HEATING);
+}
 
 void alarmController(){
   if (!isTempOk() && !isQuit()){
@@ -86,6 +129,11 @@ void ackMonitor(){
   }
 }
 
+void acknowledge(){
+  setQuit();
+  resetAlarm();
+}
+
 void setQuit(){
   globalQuit = true;
 }
@@ -102,17 +150,16 @@ bool isQuit(){
 
 void temperatureMonitor(){
   if (!isTempOk()){
-    Serial.println("Temperature out of Range! " + floatToString(temp));
+    infoln("Temperature out of Range! " + globalTempString);
   }
   else{
-    Serial.print("Temperature OK! ");
-    Serial.println(floatToString(temp));
+    info("Temperature OK! ");
+    infoln(globalTempString);
   }
 }
 
 bool isTempOk(){
-  if (temp <= HIGH_TEMP && temp >= LOW_TEMP){
-    debugln("Temp OK");
+  if (globalTemp <= HIGH_TEMP && globalTemp >= LOW_TEMP){
     return true;
   }
   else{
@@ -143,7 +190,8 @@ String floatToString(float num) {
   char str[5];
   dtostrf(num,5, 2, str);
   //Serial.println(str);
-  return str;
+  String out((char*)str);
+  return out;
 }
 
 
@@ -165,4 +213,17 @@ void debugln(String message){
 }
 
 
+// Info
+void info(String message){
+  if (INFO){
+    Serial.print(message);
+  }
+}
+
+
+void infoln(String message){
+  if (INFO){
+    Serial.println(message);
+  }
+}
 
