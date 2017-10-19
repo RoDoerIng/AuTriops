@@ -1,5 +1,7 @@
 # AuTRIOPS - Automatisierte TRIOPS Aufzuchtstation 
 
+This Repository was created during the ASK2017. This little project was meant to teach the ideas of Scrum in a practical manner.
+
 <!-- TOC -->
 
 - [AuTRIOPS - Automatisierte TRIOPS Aufzuchtstation](#autriops---automatisierte-triops-aufzuchtstation)
